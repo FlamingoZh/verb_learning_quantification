@@ -20,3 +20,5 @@ slides/
 
 data/dumped_plot_data/
 data/dumped_embeddings/
+
+data/processed/childes_gloss.txt
