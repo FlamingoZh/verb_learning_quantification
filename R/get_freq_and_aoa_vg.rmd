@@ -1,5 +1,5 @@
 ---
-title: "Get Wordbank Data"
+title: "Get Word Frequency from CHILDES and AoA from Wordbank"
 output: html_document
 ---
 
@@ -14,23 +14,25 @@ library(wordbankr)
 library(here)
 ```
 
-## Read data
+## Read Concepts
 
 ```{r}
-vg_nouns <- read_csv(here("../data/concepts/vg_noun_concept_least20.txt"),
+vg_nouns <- read_csv(here("data/concepts/vg_noun_concept_least20.txt"),
                      show_col_types = FALSE,
                      col_names = "synset") %>%
   separate(synset, into = c("word", "n", "set"), sep = "\\.", 
            remove = FALSE) %>%
   select(-n)
 
-vg_verbs <- read_csv(here("../data/concepts/vg_verb_concept_least20.txt"),
+vg_verbs <- read_csv(here("data/concepts/vg_verb_concept_least20.txt"),
                      show_col_types = FALSE,
                      col_names = "synset") %>%
   separate(synset, into = c("word", "n", "set"), sep = "\\.", 
            remove = FALSE) %>%
   select(-n)
 ```
+
+## Get word frequency
 
 ```{r read-childes noun} 
 noun_freq <- map_dfr(pull(vg_nouns, word),
@@ -40,8 +42,10 @@ noun_freq <- map_dfr(pull(vg_nouns, word),
   mutate(gloss = tolower(gloss)) %>%
   group_by(gloss) %>%
   summarise(count = sum(count))
+```
 
-write.table(noun_freq, file = "../data/processed/childes_noun_freq.txt", sep = " ",
+```{r write childes noun}
+write.table(noun_freq, file = here("data/processed/childes_noun_freq_vg.txt"), sep = " ",
             row.names = FALSE, quote = FALSE)
 ```
 
@@ -53,17 +57,21 @@ verb_freq <- map_dfr(pull(vg_verbs, word),
   mutate(gloss = tolower(gloss)) %>%
   group_by(gloss) %>%
   summarise(count = sum(count))
+```
 
-write.table(verb_freq, file = "../data/processed/childes_verb_freq.txt", sep = " ",
+```{r write childes verb}
+write.table(verb_freq, file = here("data/processed/childes_verb_freq_vg.txt"), sep = " ",
             row.names = FALSE, quote = FALSE)
 ```
+
+## Get Wordbank Nouns and Verbs
 
 ```{r}
 wordbank_nouns<-get_item_data(language = "English (American)", form = "WS") %>% filter(lexical_class=="nouns")
 wordbank_verbs<-get_item_data(language = "English (American)", form = "WS") %>% filter(lexical_class=="verbs")
 ```
 
-## Intersection Word Set
+## Word Set Intersection
 
 ```{r}
 intersect_noun_list<-intersect(vg_nouns$word,wordbank_nouns$uni_lemma)
@@ -91,7 +99,7 @@ intersect_verbs<-get_instrument_data(language = "English (American)",
 noun_aoa_data_drop_na<-fit_aoa(intersect_nouns) %>% drop_na(aoa)
 noun_aoa_data<- data.frame(word=subset(wordbank_nouns, num_item_id %in% noun_aoa_data_drop_na$num_item_id)$uni_lemma,aoa=noun_aoa_data_drop_na$aoa)
 # noun_aoa_data
-write.table(arrange(noun_aoa_data,aoa), file = "../data/processed/wordbank_noun_aoa.txt", sep = " ",
+write.table(arrange(noun_aoa_data,aoa), file = here("data/processed/wordbank_noun_aoa_vg.txt"), sep = " ",
             row.names = FALSE, quote = FALSE)
 ```
 
@@ -99,11 +107,7 @@ write.table(arrange(noun_aoa_data,aoa), file = "../data/processed/wordbank_noun_
 verb_aoa_data_drop_na<-fit_aoa(intersect_verbs) %>% drop_na(aoa)
 verb_aoa_data<- data.frame(word=subset(wordbank_verbs, num_item_id %in% verb_aoa_data_drop_na$num_item_id)$uni_lemma,aoa=verb_aoa_data_drop_na$aoa)
 # verb_aoa_data
-write.table(arrange(verb_aoa_data,aoa), file = "../data/processed/wordbank_verb_aoa.txt", sep = " ",
+write.table(arrange(verb_aoa_data,aoa), file = here("data/processed/wordbank_verb_aoa_vg.txt"), sep = " ",
             row.names = FALSE, quote = FALSE)
-```
-
-```{r}
-arrange(noun_aoa_data,aoa)
 ```
 
