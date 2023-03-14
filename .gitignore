@@ -11,8 +11,8 @@ pretrained_models/
 *.ipynb_checkpoints
 .Rproj.user
 **.html
-**/predict_aoa_updated_files
-**/predict_aoa_updated_cache
+**updated_files
+**updated_cache
 
 **-checkpoint.ipynb
 
@@ -21,4 +21,3 @@ slides/
 data/dumped_plot_data/
 data/dumped_embeddings/
 
-data/processed/childes_gloss.txt

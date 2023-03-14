@@ -6,7 +6,7 @@ import sys
 import argparse
 
 from permutation import permutation
-from utils.utils_funcs import get_aggregated_embeddings_2D
+from utils.utils_funcs import sample_embeddings_visual_and_language
 
 def simulate_exemplar_aggregation_2D(datasetname, data, aggregation_mode, n_l_exemplar_max=20, n_v_exemplar_max=20, n_sample=1, extra_info=None):
     y_mat = np.zeros((n_l_exemplar_max, n_v_exemplar_max, n_sample))
@@ -14,14 +14,41 @@ def simulate_exemplar_aggregation_2D(datasetname, data, aggregation_mode, n_l_ex
     for sample in range(1, n_sample + 1):
         print(f"Sample {sample}:")
 
-        for n_l_exemplar in range(1, n_l_exemplar_max + 1):
-            for n_v_exemplar in range(1, n_v_exemplar_max + 1):
-                print(f"n_l_exemplar {n_l_exemplar}, n_v_exemplar {n_v_exemplar}...")
+        sampled_data=sample_embeddings_visual_and_language(data, n_v_exemplar_max, n_l_exemplar_max)
 
-                z_0, z_1 = get_aggregated_embeddings_2D(data, n_v_exemplar, n_l_exemplar, aggregation_mode)
+        v_exemplar_all=list()
+        v_exemplar_indices=np.arange(n_v_exemplar_max)
+        v_exemplar_all.append(v_exemplar_indices)
+        for i in range(n_v_exemplar_max,1,-1):
+            v_exemplar_indices=np.random.choice(v_exemplar_indices,len(v_exemplar_indices)-1, replace=False)
+            v_exemplar_all.append(v_exemplar_indices)
+
+        l_exemplar_all=list()
+        l_exemplar_indices=np.arange(n_l_exemplar_max)
+        l_exemplar_all.append(l_exemplar_indices)
+        for i in range(n_l_exemplar_max,1,-1):
+            l_exemplar_indices=np.random.choice(l_exemplar_indices,len(l_exemplar_indices)-1, replace=False)
+            l_exemplar_all.append(l_exemplar_indices)
+
+        for n_v_exemplar in range(n_v_exemplar_max,0,-1):
+            for n_l_exemplar in range(n_l_exemplar_max,0,-1):
+                print("visual_exemplar: {}, language_exemplar: {}".format(n_v_exemplar, n_l_exemplar))
+
+                #compute alignment strength
+                words=sampled_data['words']
+                visual_agg=list()
+                lang_agg=list()
+                # aggregate embeddings
+                for word in words:
+                    visual_agg.append(np.mean(sampled_data['embeds'][word]['visual'][v_exemplar_all[n_v_exemplar_max-n_v_exemplar]],axis=0))
+                    lang_agg.append(np.mean(sampled_data['embeds'][word]['language'][l_exemplar_all[n_l_exemplar_max-n_l_exemplar]],axis=0))
+                
+                z_0 = np.stack(visual_agg)
+                z_1 = np.stack(lang_agg)
 
                 relative_alignment_strength, alignment_strength_list = permutation(z_0, z_1)
-                y_mat[n_l_exemplar - 1][n_v_exemplar - 1][sample - 1]=relative_alignment_strength
+                y_mat[n_v_exemplar - 1][n_l_exemplar - 1][sample - 1]=relative_alignment_strength
+                print("Relative Alignment: {}".format(relative_alignment_strength))
 
     plot_data = dict(
         y_mat=y_mat,
@@ -43,12 +70,12 @@ def simulate_exemplar_aggregation_2D(datasetname, data, aggregation_mode, n_l_ex
 
 if __name__ == '__main__':
 
-    print("aggregate_exemplars_2D.py")
+    print("aggregate_exemplars_2D_subsample.py")
 
     parser = argparse.ArgumentParser()
     parser.add_argument("datasetname", help="name of the dataset")
     parser.add_argument("data", help="data to read from")
-    parser.add_argument("aggregation_mode", help="aggregation mode: language, visual, visual_language")
+    parser.add_argument("aggregation_mode", help="aggregation mode: language, visual, visual_language, visual_language_subsample")
     parser.add_argument("--n_l_exemplar_max", type=int, default=20,
                         help="maximum number of language exemplars in simulation")
     parser.add_argument("--n_v_exemplar_max", type=int, default=20,

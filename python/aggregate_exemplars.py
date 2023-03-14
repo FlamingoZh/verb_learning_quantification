@@ -6,7 +6,7 @@ import sys
 import argparse
 
 from permutation import permutation
-from utils.utils_funcs import get_aggregated_embeddings
+from utils.utils_funcs import sample_embeddings_visual, sample_embeddings_language
 
 def simulate_exemplar_aggregation(datasetname, data, aggregation_mode, n_exemplar_max=20, n_sample=1, extra_info=None):
 
@@ -17,27 +17,47 @@ def simulate_exemplar_aggregation(datasetname, data, aggregation_mode, n_exempla
     y_list= [0]
 
     print("Start simulation...")
-    for n_exemplar in range(1, n_exemplar_max + 1):
-        # r_AS_list=list()
-        # a_AS_list=list()
-        for sample in range(1, n_sample + 1):
-            print(f"n_exemplar {n_exemplar}, sample {sample}")
+    for sample in range(1, n_sample + 1):
+        print(f"Sample {sample}:")
 
-            z_0, z_1 = get_aggregated_embeddings(data, n_exemplar, aggregation_mode)
+        if aggregation_mode=="visual":
+            sampled_data=sample_embeddings_visual(data,n_exemplar_max)
+        elif aggregation_mode=="language":
+            sampled_data=sample_embeddings_language(data,n_exemplar_max)
+        else:
+            print("Error, unrecognized aggregation mode.")
+            sys.exit(1)
+
+        exemplar_all=list()
+        exemplar_indices=np.arange(n_exemplar_max)
+        exemplar_all.append(exemplar_indices)
+        for i in range(n_exemplar_max,1,-1):
+            exemplar_indices=np.random.choice(exemplar_indices,len(exemplar_indices)-1, replace=False)
+            exemplar_all.append(exemplar_indices)
+
+        for n_exemplar in range(n_exemplar_max,0,-1):
+            print(f"n_exemplar {n_exemplar}")
+
+            #compute alignment strength
+            words=sampled_data['words']
+            visual_agg=list()
+            lang_agg=list()
+            # aggregate embeddings
+            for word in words:
+                if aggregation_mode=="visual":
+                    visual_agg.append(np.mean(sampled_data['embeds'][word]['visual'][exemplar_all[n_exemplar_max-n_exemplar]],axis=0))
+                    lang_agg.append(sampled_data['embeds'][word]['language'])
+                elif aggregation_mode=="language":
+                    visual_agg.append(sampled_data['embeds'][word]['visual'])
+                    lang_agg.append(np.mean(sampled_data['embeds'][word]['language'][exemplar_all[n_exemplar_max-n_exemplar]],axis=0))
+
+            z_0 = np.stack(visual_agg)
+            z_1 = np.stack(lang_agg)
 
             relative_alignment_strength, alignment_strength_list = permutation(z_0, z_1)
-            # r_AS_list.append(relative_alignment_strength)
-            # a_AS_list.append(alignment_strength_list[0])
             n_exemplar_list.append(n_exemplar)
             y_list.append(relative_alignment_strength)
-            print(f"Relative alignment strength: {np.round(relative_alignment_strength, 6)}")
-
-        # n_exemplar_list.append(n_exemplar)
-        # mean_list.append(np.mean(r_AS_list))
-        # max_list.append(np.max(r_AS_list))
-        # min_list.append(np.min(r_AS_list))
-        # print(f"Relative alignment strength: Max: {np.round(np.max(r_AS_list), 6)}, Mean: {np.round(np.mean(r_AS_list), 6)} Min: {np.round(np.min(r_AS_list), 6)}")
-        # print(f"Absolute alignment strength: Max: {np.round(np.max(a_AS_list), 6)}, Mean: {np.round(np.mean(a_AS_list), 6)} Min: {np.round(np.min(a_AS_list), 6)}")
+            print("Relative Alignment: {}".format(relative_alignment_strength))
 
     plot_data = dict(
         n_exemplar_list=n_exemplar_list,
@@ -50,7 +70,7 @@ def simulate_exemplar_aggregation(datasetname, data, aggregation_mode, n_exempla
     )
 
     if extra_info:
-        file_name = "_".join([datasetname, aggregation_mode, str(n_exemplar_max), str(n_sample),extra_info])
+        file_name = "_".join([datasetname, aggregation_mode, str(n_exemplar_max), str(n_sample), extra_info])
     else:
         file_name = "_".join([datasetname, aggregation_mode, str(n_exemplar_max), str(n_sample)])
 
@@ -59,7 +79,7 @@ def simulate_exemplar_aggregation(datasetname, data, aggregation_mode, n_exempla
 
 if __name__ == '__main__':
 
-    print("aggregate_exemplars.py")
+    print("aggregate_exemplars_subsample.py")
 
     parser = argparse.ArgumentParser()
     parser.add_argument("datasetname", help="name of the dataset")
