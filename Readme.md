@@ -21,9 +21,9 @@ We conducted anaylses on [Visual Genome](http://visualgenome.org/), [Visual Rela
 
 ### Pretrained Models
 
-The vision model we used is an unsupervised model with ResNet-50 architecture called Swapping Assignments between Views (SwAV). You can find several pretrained models from their [homepage](https://github.com/facebookresearch/swav). In our analyses, we used the one trained with 800 epochs. After downloading the pretrained model, put it under `pretrained_models/` (if you don't have this folder, create it).
+The vision model we used is an unsupervised model with ResNet-50 architecture called Swapping Assignments between Views (SwAV). You can find pretrained model weights on their [homepage](https://github.com/facebookresearch/swav). In our analyses, we used the model trained with 800 epochs. After downloading the pretrained model, put it under `pretrained_models/` (if you don't have this folder, create it).
 
-We also employed the uncased Bidirectional Encoder Representations from Transformers (BERT) model from the [Hugging face Transformers library](https://huggingface.co/docs/transformers/model_doc/bert) as the language model. The model should be downloaded automatically the first time you run the script for sampling exemplars.
+We also employed the uncased Bidirectional Encoder Representations from Transformers (BERT) model from the [Hugging face Transformers library](https://huggingface.co/docs/transformers/model_doc/bert) to generate linguistic representations of words. The model should be downloaded automatically the first time you run the script for sampling learning exemplars.
 
 ## Sample Learning Exemplars
 
@@ -37,7 +37,7 @@ The embeddings will be stored in `data/dumped_embeddings/`.
 
 ## Aggregate Exemplars
 
-One-dimensional (visual or lingusitic) aggregation is performed in `python/aggregate_exemplars.py`. An example is as follows:
+One-dimensional (visual or linguistic) aggregation is performed in `python/aggregate_exemplars.py`. An example is as follows:
 
 ```
 python python/aggregate_exemplars.py vg_noun "../data/dumped_embeddings/vg_noun_least20_swav_bert_20.pkl" visual \
