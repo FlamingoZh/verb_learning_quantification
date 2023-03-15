@@ -37,17 +37,17 @@ The embeddings will be stored in `data/dumped_embeddings/`.
 
 ## Aggregate Exemplars
 
-One-dimensional (visual or lingusitic) aggregation is achieved by `python/aggregate_exemplars.py`. An example is as follows:
+One-dimensional (visual or lingusitic) aggregation is performed in `python/aggregate_exemplars.py`. An example is as follows:
 
 ```
 python python/aggregate_exemplars.py vg_noun "../data/dumped_embeddings/vg_noun_least20_swav_bert_20.pkl" visual \
-  --n_exemplar_max 10 \
+  --n_exemplar_max 20 \
   --n_sample 1000
 ```
 
-This script will create a pickle file in `data/dumped_plot_data/` so you that you can load the pickle file in `notebooks/1D_exemplar_aggregation.ipynb` to make plots.
+This script will create a pickle file in `data/dumped_plot_data/` and you can load the pickle file in `notebooks/1D_exemplar_aggregation.ipynb` to make plots.
 
-Two-dimensional aggregation is achieved by `python/aggregate_exemplars_2D.py`. An example is as follows:
+Two-dimensional aggregation is performed in `python/aggregate_exemplars_2D.py`. An example is as follows:
 
 ```
 python python/aggregate_exemplars_2D.py vg_noun "../data/dumped_embeddings/vg_noun_least20_swav_bert_20.pkl" visual_language \
@@ -60,4 +60,4 @@ Similarly, this script will create a pickle file in `data/dumped_plot_data/` and
 
 ## Regression Analysis
 
-Word frequency from CHILDES and Age of Acquisition from Wordbank can be found in `data/processed` (you can also generate them on your own by running `R/get_freq_and_aoa_vg.rmd`). Code for regression analysis can be found in `notebooks/xgboost_VG.ipynb`.
+Word frequency from CHILDES and Age of Acquisition from Wordbank can be found in `data/processed` (you can also fetch them on your own by running `R/get_freq_and_aoa_vg.rmd`). Code for regression analysis can be found in `notebooks/xgboost_VG.ipynb`.
