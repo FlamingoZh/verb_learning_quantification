@@ -75,7 +75,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("datasetname", help="name of the dataset")
     parser.add_argument("data", help="data to read from")
-    parser.add_argument("aggregation_mode", help="aggregation mode: language, visual, visual_language, visual_language_subsample")
+    parser.add_argument("aggregation_mode", help="aggregation mode: visual, language, visual_language")
     parser.add_argument("--n_l_exemplar_max", type=int, default=20,
                         help="maximum number of language exemplars in simulation")
     parser.add_argument("--n_v_exemplar_max", type=int, default=20,
